@@ -32,7 +32,7 @@ class ISMTPSettings(interface.Interface):
 
     use_login = schema.Bool(title=_(u'Use login'))
     username = schema.TextLine(title=_(u'Username'), required=False)
-    password = schema.TextLine(title=_(u'Password'), required=False)
+    password = schema.Password(title=_(u'Password'), required=False)
 
     use_tls = schema.Bool(title=_(u'Use TLS'))
     keyfile = schema.Text(title=_(u'Key'), required=False)
@@ -65,10 +65,9 @@ class ISMTPLocator(IContainerLocator):
 
 class ILogoSettings(interface.Interface):
     """ allow to change the default logo
-        http://www.stereoplex.com/blog/blob-support-in-the-zodb-with-zeo
     """
     image = schema.Object(title=_('Logo'),
-                          description=_(u'Use a logo 300x90px.'),
+                          description=_(u'Use a logo 300x90px. Keep the line empty for default logo.'),
                           required=False,
                           schema=zope.app.file.interfaces.IImage)
     url = interface.Attribute('return image url or None')

@@ -17,7 +17,10 @@ class SMTP(EditFormPage):
     grok.context(interfaces.ISMTPSettings)
     locatormenuitem(IPreferencesMenu, interfaces.ISMTPLocator, _(u'SMTP Configuration'))
     label = _(u'SMTP Configuration')
-
+    prefix = 'settings'
+    
+    def message(self, mapping=None):
+        return super(SMTP, self).message(mapping=dict(object=_('SNMP')))
 
 
 class Logo(EditFormPage):
@@ -26,4 +29,8 @@ class Logo(EditFormPage):
     locatormenuitem(IPreferencesMenu, interfaces.ILogoLocator, _(u'Change Logo'))
     form_fields = grok.AutoFields(interfaces.ILogoSettings)
     form_fields['image'].custom_widget = ImageWidget
-    
+    label = _(u'Logo Configuration')
+    prefix = 'settings'
+
+    def message(self, mapping=None):
+        return super(Logo, self).message(mapping=dict(object=_('Logo')))

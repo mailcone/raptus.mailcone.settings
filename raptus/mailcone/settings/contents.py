@@ -1,5 +1,6 @@
 import grok
 import smtplib
+from StringIO import StringIO
 
 from zope.schema import vocabulary
 from zope.i18n import translate
@@ -47,27 +48,45 @@ class SMPTSettings(bases.Container):
     
 
     def send(self, message, subject, toaddr=list(), fraddr = None):
-        if not isinstance(to, (list,tuple,)):
-            to = [to]
+        if not isinstance(toaddr, (list,tuple,)):
+            toaddr = [toaddr]
         if fraddr is None:
             fraddr = self.fraddr
         request = utils.getRequest()
-        msg = MIMEText(translate(message, context=request))
+        msg = MIMEText(translate(message, context=request), 'plain', 'utf-8')
         msg['Subject'] = translate(subject, context=request)
-        msg['From'] = fr
-        msg['To'] = ', '.join(to)
+        msg['From'] = fraddr
+        msg['To'] = ', '.join(toaddr)
         
-        
-        s = smtplib.SMTP(conf['email_smtp'])
-        if conf.get('email_smtp_user') or conf.get('email_smtp_password'):
-            s.login(conf.get('email_smtp_user', ''), conf.get('email_smtp_password', ''))
-    
-        s.sendmail(fr, to, msg.as_string())
-        s.quit()
+        self.connect()
+        self._v_connection.sendmail(fraddr, toaddr, msg.as_string())
         
     
-    def conntect(self):
-        pass
+    def connect(self):
+        kw= dict()
+        ignors = ('self',)
+        keyfile = lambda v: StringIO(v)
+        certfile = lambda v:StringIO(v)
+        replaces = dict(keyfile=keyfile, certfile=certfile)
+        for key in self.protocol.__init__.im_func.func_code.co_varnames:
+            if key in ignors:
+                continue
+            value = getattr(self, key, None)
+            # skip by None or empty
+            if not value:
+                continue
+            if key in replaces:
+                value = replaces[key](value)
+            
+            kw[key] = value
+            
+            
+        self._v_connection = self.protocol(**kw)
+        if self.use_login:
+            self._v_connection.login(str(self.username), str(self.password))
+        if self.use_tls:
+            self._v_connection.starttls(keyfile(self.keyfile), certfile(self.certfile))
+        #self._v_connection.connect()
     
     def close(self):
         if self._v_connection is not None:
@@ -75,7 +94,7 @@ class SMPTSettings(bases.Container):
 
     def reconnect(self):
         self.close()
-        self.conntect()
+        self.connect()
 
 @grok.subscribe(IMailcone, grok.IApplicationInitializedEvent)
 def init_smtp_container(obj, event):
@@ -99,11 +118,11 @@ grok.global_utility(SMTPLocator, provides=interfaces.ISMTPLocator)
 class LogoSettings(bases.Container):
     grok.implements(interfaces.ILogoSettings)
     
+    grok.traversable('image')
     image = None
     
-    @property
-    def url(self):
-        return ''
+    
+
 
 @grok.subscribe(IMailcone, grok.IApplicationInitializedEvent)
 def init_logo_container(obj, event):
