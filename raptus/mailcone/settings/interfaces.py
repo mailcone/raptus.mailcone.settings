@@ -24,14 +24,14 @@ class ISMTPSettings(interface.Interface):
                              required=True,
                              vocabulary='raptus.mailcone.settings.smtp')
     
-    fraddr = schema.TextLine(title=_(u'From Address'), required=True)
-    host = schema.TextLine(title=_(u'Host'), required=True)
-    port = schema.TextLine(title=_(u'Port'), required=False)
-    local_hostname = schema.TextLine(title=_(u'Local Hostname'), required=False)
+    fraddr = schema.ASCIILine(title=_(u'From Address'), required=True)
+    host = schema.ASCIILine(title=_(u'Host'), required=True)
+    port = schema.ASCIILine(title=_(u'Port'), required=False)
+    local_hostname = schema.ASCIILine(title=_(u'Local Hostname'), required=False)
     timeout = schema.Int(title=_(u'Timeout'), required=False)
 
     use_login = schema.Bool(title=_(u'Use login'))
-    username = schema.TextLine(title=_(u'Username'), required=False)
+    username = schema.ASCIILine(title=_(u'Username'), required=False)
     password = schema.Password(title=_(u'Password'), required=False)
 
     use_tls = schema.Bool(title=_(u'Use TLS'))
